@@ -83,8 +83,9 @@ When permitted employment records are supplied, reports include current posting 
 
 The implementation is platform-neutral:
 
-- **Codex:** load [`SKILL.md`](SKILL.md)
-- **Claude Code:** use [`CLAUDE.md`](CLAUDE.md)
+- **Codex:** use `/trending-skill-radar` or load [`SKILL.md`](SKILL.md)
+- **Claude Code:** keep this repository in the project; [`CLAUDE.md`](CLAUDE.md) points to the shared workflow
+- **Cursor:** open this repository; [`.cursor/rules/trending-skill-radar.mdc`](.cursor/rules/trending-skill-radar.mdc) provides the rule automatically
 - **ChatGPT Projects and other agents:** load [`PORTABLE_PROMPT.md`](PORTABLE_PROMPT.md)
 - **Any Python environment:** run the shared CLI and tests
 

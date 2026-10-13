@@ -1,0 +1,11 @@
+---
+description: "Use Trending Skill Radar to research the top five specific skills in a user-selected domain."
+globs:
+alwaysApply: false
+---
+
+# Trending Skill Radar
+
+Use `PORTABLE_PROMPT.md` for the full workflow. Ask which domain the user wants to learn unless it is already specified. Return no more than five concrete, demonstrable skills by default—not broad labels. For every displayed skill include rating, score breakdown, confidence, evidence coverage, future potential, current jobs when permitted data exists, and a detailed learning report.
+
+If the user selects a skill, research current GitHub repositories using it, then explain what to learn, in what order, how deeply, estimated effort, tools, and a measurable project. Never scrape LinkedIn, invent job counts, or execute repository code.
