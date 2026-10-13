@@ -1,7 +1,7 @@
 import json, sys, unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
-from radar_core import build_report, confidence, historical_growth, normalize
+from radar_core import build_report, confidence, historical_growth, job_summary, normalize
 
 class PipelineTests(unittest.TestCase):
     def test_normalize_preserves_missing_and_strips_tracking(self):
@@ -26,5 +26,11 @@ class PipelineTests(unittest.TestCase):
 
     def test_confidence_is_not_score(self):
         self.assertEqual(confidence([],1),"Insufficient Evidence")
+
+    def test_job_growth_requires_comparable_baseline(self):
+        available = job_summary([{"source_name":"linkedin-export","source_type":"jobs","metrics":{"job_count":150,"previous_job_count":100}}])
+        self.assertEqual(available["growth_pct"], 50)
+        unavailable = job_summary([])
+        self.assertEqual(unavailable["status"], "Unavailable")
 
 if __name__ == "__main__": unittest.main()

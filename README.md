@@ -32,6 +32,8 @@ It answers one practical question:
 - **A reality check** — duplicates, missing history, weak evidence, counterevidence, and unavailable job-market data are shown instead of hidden.
 - **A next step** — evidence links plus a small project idea to validate the skill in real life.
 
+Recommendations are intentionally concrete: a domain, a capability, a toolchain, and a demonstrable outcome—not vague labels such as “learn AI agents.”
+
 An emerging skill is not automatically the best skill to learn. An established skill can remain highly valuable.
 
 ## Quick start
@@ -66,6 +68,8 @@ The core pipeline works offline and needs no paid model. Optional, documented JS
 - GitHub REST API
 
 arXiv, Semantic Scholar, Hugging Face, job boards, and Google Scholar are intentionally not represented as live coverage unless a permitted connector or user-supplied record is available. No unauthorized scraping or retrieved-code execution is included.
+
+When permitted employment records are supplied, reports include current posting counts and comparable-window change. LinkedIn is never scraped; without an authorized API, licensed dataset, or user-supplied export, job demand and growth are shown as **Unavailable**.
 
 ## Use it anywhere
 

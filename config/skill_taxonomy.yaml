@@ -20,6 +20,35 @@ skills:
     category: Agent engineering
     aliases: [tool use, agent orchestration, workflow agents]
     prerequisites: [APIs, testing, observability]
+  - id: authorized-game-reverse-engineering
+    name: Authorized game binary reverse engineering
+    category: Game development and preservation
+    aliases: [game decompilation, binary analysis, game modding, interoperability reverse engineering]
+    prerequisites: [C/C++, assembly basics, debugging, file formats]
+    tools: [Ghidra, IDA Free, x64dbg, Claude Code]
+    outcomes: [modding, interoperability, preservation, security analysis]
+    boundary: Only binaries and assets the learner owns or is authorized to analyze; do not obtain or publish proprietary source code.
+  - id: gameplay-systems-reconstruction
+    name: Gameplay systems reconstruction
+    category: Game development
+    aliases: [behavior reconstruction, game mechanics analysis, engine archaeology]
+    prerequisites: [game programming, debugging, experiment design]
+    tools: [debuggers, profilers, Claude Code]
+    outcomes: [compatible reimplementation, mod tooling, preservation documentation]
+  - id: ai-assisted-codebase-forensics
+    name: AI-assisted codebase forensics
+    category: Software engineering
+    aliases: [legacy code archaeology, repository forensics, program comprehension]
+    prerequisites: [version control, testing, static analysis]
+    tools: [Claude Code, language servers, call-graph tools]
+    outcomes: [migration plans, bug localization, documentation, safe refactors]
+  - id: agent-evaluation-engineering
+    name: Agent evaluation engineering
+    category: AI engineering
+    aliases: [agent evals, tool-use evaluation, workflow evaluation]
+    prerequisites: [testing, metrics, observability]
+    tools: [evaluation harnesses, tracing systems]
+    outcomes: [reliable agent releases, regression suites, failure analysis]
   - id: ai-security
     name: AI security and safety
     category: AI security

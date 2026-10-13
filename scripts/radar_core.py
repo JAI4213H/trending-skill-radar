@@ -82,6 +82,17 @@ def historical_growth(records: list[dict]) -> float | None:
     if first <= 0: return None
     return round((last - first) / first * 100, 2)
 
+def job_summary(records: list[dict]) -> dict:
+    jobs = [r for r in records if r.get("source_type") in {"jobs", "labor_market"}]
+    current = sum(float(r.get("metrics", {}).get("job_count", 0) or 0) for r in jobs)
+    previous = sum(float(r.get("metrics", {}).get("previous_job_count", 0) or 0) for r in jobs)
+    expected = [r.get("metrics", {}).get("expected_growth_pct") for r in jobs if r.get("metrics", {}).get("expected_growth_pct") is not None]
+    horizon = next((r.get("metrics", {}).get("forecast_horizon") for r in jobs if r.get("metrics", {}).get("forecast_horizon")), None)
+    if not jobs or current <= 0:
+        return {"status": "Unavailable", "source": None, "current_postings": None, "growth_pct": None, "expected_growth_pct": None, "forecast_horizon": None}
+    growth = None if previous <= 0 else round((current - previous) / previous * 100, 2)
+    return {"status": "Available", "source": ", ".join(sorted({r.get("source_name", "unknown") for r in jobs})), "current_postings": int(current), "growth_pct": growth, "expected_growth_pct": sum(expected) / len(expected) if expected else None, "forecast_horizon": horizon}
+
 def score_skill(skill_id: str, records: list[dict], profile: dict | None = None) -> dict:
     vals = {d: [_number(r, d) for r in records if _number(r, d) is not None] for d in DIMENSIONS}
     observed = {d: (sum(v)/len(v) if v else None) for d, v in vals.items()}
@@ -104,7 +115,7 @@ def build_report(records: list[dict], profile: dict | None = None) -> dict:
     for score in scores: score["recommendation"] = recommendation(score)
     scores.sort(key=lambda x: (x["overall"] is not None, x["overall"] or -1), reverse=True)
     return {"methodology_version": METHODOLOGY_VERSION, "generated_at": utc_now(), "records": unique, "skills": scores,
-            "coverage": {"input_records": len(records), "unique_records": len(unique), "source_types": sorted({r.get("source_type") for r in unique}), "failed_sources": []}}
+            "jobs": job_summary(unique), "coverage": {"input_records": len(records), "unique_records": len(unique), "source_types": sorted({r.get("source_type") for r in unique}), "failed_sources": []}}
 
 def recommendation(score: dict) -> str:
     if score["confidence"] == "Insufficient Evidence": return "Monitor"
@@ -121,7 +132,9 @@ def markdown_report(report: dict, limit: int = 10) -> str:
     global_rank = sorted(report["skills"], key=lambda x: (x["scores"].get("trend") is not None, x["scores"].get("trend") or -1), reverse=True)[:limit]
     emerging = [s["skill_id"] for s in global_rank if s["maturity_stage"] in {"Early Signal", "Emerging", "Accelerating"}]
     valuable = [s["skill_id"] for s in skills if (s["scores"].get("current_value") or 0) >= 70]
-    lines = [f"# AI Skill Radar — {report['generated_at'][:10]}", "", f"**Methodology version:** {report['methodology_version']}", f"**Collection status:** {len(report['records'])} normalized records; source failures: {', '.join(report['coverage']['failed_sources']) or 'none reported'}", "", "## Executive summary", "", f"- **Strongest emerging candidates:** {', '.join(emerging) or 'Insufficient Evidence'}.", f"- **Most valuable to investigate now:** {', '.join(valuable) or 'Insufficient Evidence'}.", f"- **Promising early-stage directions:** {', '.join([s['skill_id'] for s in global_rank if s['maturity_stage'] == 'Early Signal']) or 'Insufficient Evidence'}.", "- **Research/adoption/employment disagreement:** Employment evidence is unavailable unless supplied through a permitted source; do not infer it from research or developer activity.", "- **Biggest limitation:** Scores depend on supplied evidence, and missing dimensions remain unavailable.", f"- **Next action:** Investigate the top candidate's linked implementation and build a small measurable project; current recommendation is **{skills[0]['recommendation'] if skills else 'Monitor'}**.", "", "An emerging trend is not the same as an established skill that remains valuable; the rankings below keep those judgments separate.", "", "## Top skill candidates", "", f"Maximum candidates shown: {limit}. **Methodology:** {report['methodology_version']}.", "", "| Rank | Skill | Maturity stage | Trend score | Current value | Future potential | Confidence | Evidence coverage | Recommendation |", "|---:|---|---|---:|---:|---:|---|---:|---|"]
+    jobs = report.get("jobs", {})
+    job_text = "Unavailable" if jobs.get("status") != "Available" else f"{jobs['current_postings']} postings from {jobs['source']}; comparable-window change: {('Unavailable' if jobs['growth_pct'] is None else str(jobs['growth_pct']) + '%')}; expected growth: {('Unavailable' if jobs.get('expected_growth_pct') is None else str(round(jobs['expected_growth_pct'], 1)) + '% over ' + str(jobs.get('forecast_horizon') or 'unspecified horizon'))}"
+    lines = [f"# AI Skill Radar — {report['generated_at'][:10]}", "", f"**Methodology version:** {report['methodology_version']}", f"**Collection status:** {len(report['records'])} normalized records; source failures: {', '.join(report['coverage']['failed_sources']) or 'none reported'}", "", "## Executive summary", "", f"- **Strongest emerging candidates:** {', '.join(emerging) or 'Insufficient Evidence'}.", f"- **Most valuable to investigate now:** {', '.join(valuable) or 'Insufficient Evidence'}.", f"- **Promising early-stage directions:** {', '.join([s['skill_id'] for s in global_rank if s['maturity_stage'] == 'Early Signal']) or 'Insufficient Evidence'}.", f"- **Employment signal:** {job_text}. Do not infer LinkedIn-wide demand from research or developer activity.", "- **Biggest limitation:** Scores depend on supplied evidence, and missing dimensions remain unavailable.", f"- **Next action:** Investigate the top candidate's linked implementation and build a small measurable project; current recommendation is **{skills[0]['recommendation'] if skills else 'Monitor'}**.", "", "An emerging trend is not the same as an established skill that remains valuable; the rankings below keep those judgments separate.", "", "## Top skill candidates", "", f"Maximum candidates shown: {limit}. **Methodology:** {report['methodology_version']}.", "", "| Rank | Skill | Maturity stage | Trend score | Current value | Future potential | Confidence | Evidence coverage | Recommendation |", "|---:|---|---|---:|---:|---:|---|---:|---|"]
     for rank, s in enumerate(skills, 1):
         v=s["scores"]
         lines.append(f"| {rank} | {s['skill_id']} | {s['maturity_stage']} | {_fmt(v.get('trend'))} | {_fmt(v.get('current_value'))} | {_fmt(v.get('future'))} | {s['confidence']} | {s['coverage']:.0%} | {s['recommendation']} |")
