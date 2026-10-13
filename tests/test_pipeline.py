@@ -33,4 +33,9 @@ class PipelineTests(unittest.TestCase):
         unavailable = job_summary([])
         self.assertEqual(unavailable["status"], "Unavailable")
 
+    def test_report_exposes_rating_and_jobs(self):
+        report = build_report([{"source":"x","source_type":"implementation","title":"tool","skills":["s"],"metrics":{"trend":80,"current_value":80,"future":80,"learning":80}}, {"source":"jobs","source_type":"jobs","title":"roles","skills":["s"],"metrics":{"job_count":10,"previous_job_count":5}}])
+        self.assertEqual(report["skills"][0]["rating"], "Excellent")
+        self.assertEqual(report["skills"][0]["jobs"]["current_postings"], 10)
+
 if __name__ == "__main__": unittest.main()

@@ -93,6 +93,10 @@ def job_summary(records: list[dict]) -> dict:
     growth = None if previous <= 0 else round((current - previous) / previous * 100, 2)
     return {"status": "Available", "source": ", ".join(sorted({r.get("source_name", "unknown") for r in jobs})), "current_postings": int(current), "growth_pct": growth, "expected_growth_pct": sum(expected) / len(expected) if expected else None, "forecast_horizon": horizon}
 
+def rating(value: float | None) -> str:
+    if value is None: return "Insufficient Evidence"
+    return "Excellent" if value >= 80 else "Strong" if value >= 65 else "Developing" if value >= 50 else "Weak"
+
 def score_skill(skill_id: str, records: list[dict], profile: dict | None = None) -> dict:
     vals = {d: [_number(r, d) for r in records if _number(r, d) is not None] for d in DIMENSIONS}
     observed = {d: (sum(v)/len(v) if v else None) for d, v in vals.items()}
@@ -112,7 +116,10 @@ def build_report(records: list[dict], profile: dict | None = None) -> dict:
     for r in unique:
         for skill in r.get("related_skill_ids") or ["unclassified"]: grouped[skill].append(r)
     scores = [score_skill(skill, rs, profile) for skill, rs in grouped.items()]
-    for score in scores: score["recommendation"] = recommendation(score)
+    for score in scores:
+        score["recommendation"] = recommendation(score)
+        score["rating"] = rating(score["overall"])
+        score["jobs"] = job_summary(next((rs for skill, rs in grouped.items() if skill == score["skill_id"]), []))
     scores.sort(key=lambda x: (x["overall"] is not None, x["overall"] or -1), reverse=True)
     return {"methodology_version": METHODOLOGY_VERSION, "generated_at": utc_now(), "records": unique, "skills": scores,
             "jobs": job_summary(unique), "coverage": {"input_records": len(records), "unique_records": len(unique), "source_types": sorted({r.get("source_type") for r in unique}), "failed_sources": []}}
@@ -127,17 +134,19 @@ def recommendation(score: dict) -> str:
 def _fmt(value: float | None) -> str:
     return "Insufficient Evidence" if value is None else f"{value:.1f}"
 
-def markdown_report(report: dict, limit: int = 10) -> str:
+def markdown_report(report: dict, limit: int = 5) -> str:
     limit = max(1, limit); skills = report["skills"][:limit]
     global_rank = sorted(report["skills"], key=lambda x: (x["scores"].get("trend") is not None, x["scores"].get("trend") or -1), reverse=True)[:limit]
     emerging = [s["skill_id"] for s in global_rank if s["maturity_stage"] in {"Early Signal", "Emerging", "Accelerating"}]
     valuable = [s["skill_id"] for s in skills if (s["scores"].get("current_value") or 0) >= 70]
     jobs = report.get("jobs", {})
     job_text = "Unavailable" if jobs.get("status") != "Available" else f"{jobs['current_postings']} postings from {jobs['source']}; comparable-window change: {('Unavailable' if jobs['growth_pct'] is None else str(jobs['growth_pct']) + '%')}; expected growth: {('Unavailable' if jobs.get('expected_growth_pct') is None else str(round(jobs['expected_growth_pct'], 1)) + '% over ' + str(jobs.get('forecast_horizon') or 'unspecified horizon'))}"
-    lines = [f"# AI Skill Radar — {report['generated_at'][:10]}", "", f"**Methodology version:** {report['methodology_version']}", f"**Collection status:** {len(report['records'])} normalized records; source failures: {', '.join(report['coverage']['failed_sources']) or 'none reported'}", "", "## Executive summary", "", f"- **Strongest emerging candidates:** {', '.join(emerging) or 'Insufficient Evidence'}.", f"- **Most valuable to investigate now:** {', '.join(valuable) or 'Insufficient Evidence'}.", f"- **Promising early-stage directions:** {', '.join([s['skill_id'] for s in global_rank if s['maturity_stage'] == 'Early Signal']) or 'Insufficient Evidence'}.", f"- **Employment signal:** {job_text}. Do not infer LinkedIn-wide demand from research or developer activity.", "- **Biggest limitation:** Scores depend on supplied evidence, and missing dimensions remain unavailable.", f"- **Next action:** Investigate the top candidate's linked implementation and build a small measurable project; current recommendation is **{skills[0]['recommendation'] if skills else 'Monitor'}**.", "", "An emerging trend is not the same as an established skill that remains valuable; the rankings below keep those judgments separate.", "", "## Top skill candidates", "", f"Maximum candidates shown: {limit}. **Methodology:** {report['methodology_version']}.", "", "| Rank | Skill | Maturity stage | Trend score | Current value | Future potential | Confidence | Evidence coverage | Recommendation |", "|---:|---|---|---:|---:|---:|---|---:|---|"]
+    lines = [f"# AI Skill Radar — {report['generated_at'][:10]}", "", f"**Methodology version:** {report['methodology_version']}", f"**Collection status:** {len(report['records'])} normalized records; source failures: {', '.join(report['coverage']['failed_sources']) or 'none reported'}", "", "## Executive summary", "", f"- **Strongest emerging candidates:** {', '.join(emerging) or 'Insufficient Evidence'}.", f"- **Most valuable to investigate now:** {', '.join(valuable) or 'Insufficient Evidence'}.", f"- **Promising early-stage directions:** {', '.join([s['skill_id'] for s in global_rank if s['maturity_stage'] == 'Early Signal']) or 'Insufficient Evidence'}.", f"- **Employment signal:** {job_text}. Do not infer LinkedIn-wide demand from research or developer activity.", "- **Biggest limitation:** Scores depend on supplied evidence, and missing dimensions remain unavailable.", f"- **Next action:** Investigate the top candidate's linked implementation and build a small measurable project; current recommendation is **{skills[0]['recommendation'] if skills else 'Monitor'}**.", "", "An emerging trend is not the same as an established skill that remains valuable; the rankings below keep those judgments separate.", "", "## Top skill candidates", "", f"Maximum candidates shown: {limit}. **Methodology:** {report['methodology_version']}.", "", "| Rank | Skill | Rating | Maturity stage | Trend score | Current value | Future potential | Current jobs | Confidence | Evidence coverage | Recommendation |", "|---:|---|---|---|---:|---:|---:|---|---|---:|---|"]
     for rank, s in enumerate(skills, 1):
         v=s["scores"]
-        lines.append(f"| {rank} | {s['skill_id']} | {s['maturity_stage']} | {_fmt(v.get('trend'))} | {_fmt(v.get('current_value'))} | {_fmt(v.get('future'))} | {s['confidence']} | {s['coverage']:.0%} | {s['recommendation']} |")
+        jobs_for_skill = s.get("jobs", {})
+        jobs_text = "Unavailable" if jobs_for_skill.get("status") != "Available" else str(jobs_for_skill.get("current_postings")) + " (" + ("growth unavailable" if jobs_for_skill.get("growth_pct") is None else str(jobs_for_skill["growth_pct"]) + "% window change") + ")"
+        lines.append(f"| {rank} | {s['skill_id']} | {s['rating']} | {s['maturity_stage']} | {_fmt(v.get('trend'))} | {_fmt(v.get('current_value'))} | {_fmt(v.get('future'))} | {jobs_text} | {s['confidence']} | {s['coverage']:.0%} | {s['recommendation']} |")
     lines += ["", "## Global trend ranking", "", "| Rank | Skill | Trend score | Maturity | Confidence |", "|---:|---|---:|---|---|"]
     for rank, s in enumerate(global_rank, 1): lines.append(f"| {rank} | {s['skill_id']} | {_fmt(s['scores'].get('trend'))} | {s['maturity_stage']} | {s['confidence']} |")
     lines += ["", "## Personal learning ranking", "", "This ranking uses the learner profile when supplied; otherwise it is a general learning-priority ranking.", "", "| Rank | Skill | Learning priority | Current value | Recommendation |", "|---:|---|---:|---:|---|"]
