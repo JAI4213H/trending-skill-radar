@@ -1,0 +1,30 @@
+version: 1
+sources:
+  arxiv:
+    enabled: false
+    access_method: official API
+    source_tier: primary
+    required_env: []
+    notes: Respect arXiv API rate guidance; connector input is normalized locally.
+  github:
+    enabled: false
+    access_method: official REST API or user export
+    source_tier: implementation
+    required_env: [GITHUB_TOKEN]
+  semantic_scholar:
+    enabled: false
+    access_method: documented API
+    source_tier: scholarly index
+    required_env: [SEMANTIC_SCHOLAR_API_KEY]
+  google_scholar:
+    enabled: false
+    access_method: manual or user-supplied records only
+    source_tier: supplementary
+    required_env: []
+    notes: No scraper, bypass, or login automation.
+  jobs:
+    enabled: false
+    access_method: licensed API, permitted feed, or user export
+    source_tier: labor market
+    required_env: []
+    notes: No unauthorized LinkedIn scraping.

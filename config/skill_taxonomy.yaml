@@ -1,0 +1,27 @@
+version: 1
+skills:
+  - id: llm-evaluation
+    name: LLM evaluation
+    category: LLM engineering
+    aliases: [model evaluation, evals, benchmark design]
+    prerequisites: [python, statistics]
+  - id: inference-serving
+    name: LLM inference and serving
+    category: LLM infrastructure
+    aliases: [model serving, inference optimization, vllm]
+    prerequisites: [python, systems, APIs]
+  - id: retrieval-systems
+    name: Retrieval and knowledge systems
+    category: Retrieval
+    aliases: [RAG, retrieval augmented generation, vector search]
+    prerequisites: [databases, embeddings]
+  - id: agent-engineering
+    name: Agent engineering
+    category: Agent engineering
+    aliases: [tool use, agent orchestration, workflow agents]
+    prerequisites: [APIs, testing, observability]
+  - id: ai-security
+    name: AI security and safety
+    category: AI security
+    aliases: [prompt injection defense, model security, red teaming]
+    prerequisites: [security, threat modeling]

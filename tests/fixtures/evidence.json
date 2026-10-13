@@ -1,0 +1,5 @@
+[
+  {"source_name":"arxiv","source_type":"research","source_tier":"primary","original_source_id":"paper-1","title":"Evaluation methods","published_at":"2026-01-01","related_skill_ids":["llm-evaluation"],"metrics":{"trend":80,"future":85,"activity":10}},
+  {"source_name":"github","source_type":"implementation","source_tier":"implementation","original_source_id":"repo-1","title":"Evaluation toolkit","published_at":"2026-06-01","related_skill_ids":["llm-evaluation"],"metrics":{"trend":70,"current_value":80,"learning":75,"activity":20}},
+  {"source_name":"official","source_type":"official","source_tier":"primary","original_source_id":"release-1","title":"Evaluation guidance","published_at":"2026-07-01","related_skill_ids":["llm-evaluation"],"metrics":{"current_value":75,"future":80,"learning":70}}
+]
