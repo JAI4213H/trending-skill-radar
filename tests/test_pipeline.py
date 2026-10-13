@@ -1,7 +1,7 @@
 import json, sys, unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
-from radar_core import build_report, confidence, historical_growth, job_summary, normalize
+from radar_core import build_report, confidence, historical_growth, job_summary, markdown_report, normalize
 
 class PipelineTests(unittest.TestCase):
     def test_normalize_preserves_missing_and_strips_tracking(self):
@@ -37,5 +37,12 @@ class PipelineTests(unittest.TestCase):
         report = build_report([{"source":"x","source_type":"implementation","title":"tool","skills":["s"],"metrics":{"trend":80,"current_value":80,"future":80,"learning":80}}, {"source":"jobs","source_type":"jobs","title":"roles","skills":["s"],"metrics":{"job_count":10,"previous_job_count":5}}])
         self.assertEqual(report["skills"][0]["rating"], "Excellent")
         self.assertEqual(report["skills"][0]["jobs"]["current_postings"], 10)
+
+    def test_every_displayed_skill_has_detail_report(self):
+        report = build_report([{"source":"x","source_type":"implementation","title":"tool","skills":["s"],"metrics":{"trend":80,"current_value":80,"future":80,"learning":80}}])
+        rendered = markdown_report(report, limit=5)
+        self.assertIn("## Detailed skill reports", rendered)
+        self.assertIn("### s", rendered)
+        self.assertIn("**Confidence:**", rendered)
 
 if __name__ == "__main__": unittest.main()

@@ -151,11 +151,13 @@ def markdown_report(report: dict, limit: int = 5) -> str:
     for rank, s in enumerate(global_rank, 1): lines.append(f"| {rank} | {s['skill_id']} | {_fmt(s['scores'].get('trend'))} | {s['maturity_stage']} | {s['confidence']} |")
     lines += ["", "## Personal learning ranking", "", "This ranking uses the learner profile when supplied; otherwise it is a general learning-priority ranking.", "", "| Rank | Skill | Learning priority | Current value | Recommendation |", "|---:|---|---:|---:|---|"]
     for rank, s in enumerate(skills, 1): lines.append(f"| {rank} | {s['skill_id']} | {_fmt(s['scores'].get('learning'))} | {_fmt(s['scores'].get('current_value'))} | {s['recommendation']} |")
-    lines += ["", "## Evidence and real-life adaptation", ""]
+    lines += ["", "## Detailed skill reports", ""]
     for s in skills:
         evidence = [r for r in report["records"] if r["evidence_id"] in s["evidence_ids"]]
         links = "; ".join(f"[{r['title']}]({r.get('canonical_url')})" if r.get('canonical_url') else f"{r['title']} (link unavailable)" for r in evidence)
-        lines += [f"### {s['skill_id']}", f"- Evidence and links: {links}.", "- Real-life adaptation: use a linked implementation or paper as the basis for a small project with a measurable before/after evaluation; if no adaptation link is available, this is the recommended validation path."]
+        v = s["scores"]; jobs_for_skill = s.get("jobs", {})
+        jobs_detail = "Unavailable" if jobs_for_skill.get("status") != "Available" else f"{jobs_for_skill['current_postings']} postings from {jobs_for_skill['source']}; window change: {jobs_for_skill.get('growth_pct') if jobs_for_skill.get('growth_pct') is not None else 'Unavailable'}"
+        lines += [f"### {s['skill_id']}", f"- **Rating:** {s['rating']} | **Maturity:** {s['maturity_stage']} | **Recommendation:** {s['recommendation']}", f"- **Scores:** trend {_fmt(v.get('trend'))}; current value {_fmt(v.get('current_value'))}; future potential {_fmt(v.get('future'))}; learning priority {_fmt(v.get('learning'))}.", f"- **Confidence:** {s['confidence']} | **Evidence coverage:** {s['coverage']:.0%} | **Methodology:** {s['methodology_version']}.", f"- **Current jobs:** {jobs_detail}.", f"- **Evidence and links:** {links}.", "- **Practical next step:** use a linked implementation or paper as the basis for a small project with a measurable before/after evaluation; if no adaptation link is available, this is the recommended validation path."]
     lines += ["", "## Method limitations", "", "Scores are deterministic summaries of supplied evidence, not calibrated probabilities. Missing dimensions remain missing; historical growth is unavailable without two dated activity observations. Review source independence, counterevidence, and access restrictions before acting.", "", "## All evidence", ""]
     for r in report["records"]: lines.append(f"- `{r['evidence_id']}` [{r['source_name']}] {r['title']} — {r.get('canonical_url') or 'link unavailable'}")
     return "\n".join(lines) + "\n"
