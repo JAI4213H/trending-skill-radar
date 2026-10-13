@@ -38,6 +38,14 @@ An emerging skill is not automatically the best skill to learn. An established s
 
 ## Quick start
 
+In Codex, activate the skill with:
+
+```text
+/trending-skill-radar
+```
+
+The skill first asks which domain you want to learn in, unless your request already names one. It then finds specific, demonstrable skills inside that domain.
+
 ```bash
 python scripts/radar.py scan \
   --input tests/fixtures/evidence.json \

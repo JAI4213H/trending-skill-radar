@@ -2,6 +2,8 @@
 
 Use this project to identify specific, demonstrable AI/ML/LLM and domain skills worth learning from dated, traceable evidence. Avoid generic recommendations: name the capability, domain, tools, prerequisites, and real-life outcome.
 
+Activation: `/trending-skill-radar`. At the start, ask the user which domain they want to learn skills in unless the domain is already clear from their request.
+
 Workflow:
 
 1. Define the domain, analysis window, candidate limit (default: top 10), and learner profile.

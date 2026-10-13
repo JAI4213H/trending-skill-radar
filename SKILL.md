@@ -9,6 +9,10 @@ metadata:
 
 Use this skill to turn dated evidence into a cautious learning-priority report. A news item, paper, model, tool, capability, skill, and worthwhile learning investment are different objects; keep them separate.
 
+## Activation and first question
+
+Activate it with `/trending-skill-radar` (or `$trending-skill-radar` where the host uses dollar-style skill invocation). Before researching, ask: **"Which domain do you want to learn skills in?"** If the user already named a domain, do not ask again. Accept a broad domain such as game development, cybersecurity, data engineering, AI infrastructure, or creative tooling, then narrow recommendations to specific capabilities inside it.
+
 Prefer specific, demonstrable skills over broad labels. "AI agent engineering" is a category, not a useful recommendation. Name the concrete capability, domain, toolchain, and outcome—for example, "authorized game binary reverse engineering for interoperability and modding with Claude Code-assisted static analysis"—and state the prerequisites and legal boundary. Never recommend obtaining proprietary source code without authorization.
 
 ## Workflow

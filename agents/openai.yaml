@@ -1,0 +1,8 @@
+interface:
+  display_name: "Trending Skill Radar"
+  short_description: "Find specific skills worth learning next"
+  brand_color: "#55E6A5"
+  default_prompt: "Use $trending-skill-radar to ask me which domain I want to learn in, then find the top 10 specific skills with evidence."
+
+policy:
+  allow_implicit_invocation: true
